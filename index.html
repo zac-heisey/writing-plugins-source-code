@@ -66,26 +66,59 @@
 			 * Element.matches() polyfill (simple version)
 			 * https://developer.mozilla.org/en-US/docs/Web/API/Element/matches#Polyfill
 			 */
-			if (!Element.prototype.matches) {
+		  if (!Element.prototype.matches) {
 				Element.prototype.matches = Element.prototype.msMatchesSelector || Element.prototype.webkitMatchesSelector;
 			}
 
-			// Listen for changes to inputs and text areas
-			document.addEventListener('input', function (event) {
+      var mirror = (function() {
 
-				// Check that changed input is a mirror input
-				if (!event.target.matches('[data-mirror]')) return;
+        'use strict';
 
-				// Get element to mirror into
-				var target = event.target.getAttribute('data-mirror');
-				var mirror = document.querySelector(target);
-				if (!target) return;
+        // Variables
 
-				// Mirror the content
-				// Replace line breaks with <br> elements
-				mirror.innerHTML = event.target.value.replace(/\r?\n/g, '<br>');
+        // Set up empty publicAPIs object
+        var publicAPIs = {};
+        // Default settings
+        var defaults = {
+          attribute: 'data-mirror',
+          addBreaks: true,
+          callback: function(content) {
+            return content;
+          }
+        };
+        // User settings
+        var settings;
 
-			}, false);
+        // Methods
+
+        // Initialize the plugin
+        publicAPIs.init = function(options) {
+
+          // Listen for changes to inputs and text areas
+    			document.addEventListener('input', function (event) {
+
+    				// Check that changed input is a mirror input
+    				if (!event.target.matches('[data-mirror]')) return;
+
+    				// Get element to mirror into
+    				var target = event.target.getAttribute('data-mirror');
+    				var mirror = document.querySelector(target);
+    				if (!target) return;
+
+    				// Mirror the content
+    				// Replace line breaks with <br> elements
+    				mirror.innerHTML = event.target.value.replace(/\r?\n/g, '<br>');
+
+    			}, false);
+
+        };
+
+        // Return public methods
+        return publicAPIs;
+
+      })(); // End of mirror IIFE function
+
+      mirror.init();
 		</script>
 	</body>
 </html>
