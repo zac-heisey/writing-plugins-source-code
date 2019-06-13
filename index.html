@@ -70,55 +70,91 @@
 				Element.prototype.matches = Element.prototype.msMatchesSelector || Element.prototype.webkitMatchesSelector;
 			}
 
-      var mirror = (function() {
+      var Mirror = (function() {
 
         'use strict';
 
-        // Variables
+				//=== Variables ===//
 
-        // Set up empty publicAPIs object
-        var publicAPIs = {};
-        // Default settings
-        var defaults = {
-          attribute: 'data-mirror',
-          addBreaks: true,
-          callback: function(content) {
-            return content;
-          }
-        };
-        // User settings
-        var settings;
+				// Default settings
+				var defaults = {
+					attribute: 'data-mirror',
+					addBreaks: true,
+					callback: function(content) {
+						return content;
+					}
+				};
 
-        // Methods
+				// Create the constructor
+				var Constructor = function(selector, options) {
 
-        // Initialize the plugin
-        publicAPIs.init = function(options) {
+	        // Set up empty publicAPIs object
+	        var publicAPIs = {};
 
-          // Listen for changes to inputs and text areas
-    			document.addEventListener('input', function (event) {
+	        var settings;
 
-    				// Check that changed input is a mirror input
-    				if (!event.target.matches('[data-mirror]')) return;
+					//=== Methods ===//
 
-    				// Get element to mirror into
-    				var target = event.target.getAttribute('data-mirror');
-    				var mirror = document.querySelector(target);
-    				if (!target) return;
+					// Render content
+					publicAPIs.renderContent = function(value, mirror) {
+						// Get the content
+						var content = settings.callback(value);
+						if (settings.addBreaks) {
+							content = content.replace(/\r?\n/g, '<br>');
+						}
 
-    				// Mirror the content
-    				// Replace line breaks with <br> elements
-    				mirror.innerHTML = event.target.value.replace(/\r?\n/g, '<br>');
+						// Mirror the content
+						// Replace line breaks with <br> elements
+						mirror.innerHTML = content;
+					};
 
-    			}, false);
+					// Handle changes to inputs and text areas
+					var handleInputs = function(event) {
+						// Check that changed input is a mirror input
+						if (!event.target.matches(selector)) return;
 
-        };
+						// Get element to mirror into
+						var target = event.target.getAttribute(settings.attribute);
+						var mirror = document.querySelector(target);
+						if (!target) return;
 
-        // Return public methods
-        return publicAPIs;
+						// Render the content
+						publicAPIs.renderContent(event.target.value, mirror);
+					};
+
+					// Destroy the current initialization
+					publicAPIs.destroy = function() {
+						// Remove the event listener
+						document.removeEventListener('input', handleInputs, false);
+
+						// Reset variables
+						settings = null;
+					};
+
+	        // Initialize the plugin
+	        publicAPIs.init = function(selector, options) {
+
+						// Merge defaults with user options
+						settings = Object.assign({}, defaults, options);
+
+	          // Run handleInputs event
+	    			document.addEventListener('input', handleInputs, false);
+
+	        };
+
+					// Initialize the plugin
+					publicAPIs.init(selector, options);
+
+	        // Return public methods
+	        return publicAPIs;
+				};
+
+				// Return the constructor
+				return Constructor;
 
       })(); // End of mirror IIFE function
 
-      mirror.init();
+      var content = new Mirror('#content');
 		</script>
 	</body>
 </html>
